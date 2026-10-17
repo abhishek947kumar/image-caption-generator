@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  caption-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: neural-caption-studio
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    volumes:
+      - ./weights:/app/weights
+      - ./data/samples:/app/data/samples

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Caption Studio | AI Image Caption Generator (CNN + LSTM)</title>
+  <meta name="description" content="Generate natural language descriptions for images using deep learning Convolutional Neural Networks (CNN) combined with LSTM Recurrent Neural Networks.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Glowing background ambient blobs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+            <path d="M12 12 2.1 12a10 10 0 0 0 9.9 10V12z"></path>
+            <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.3"></circle>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Neural Caption Studio</h1>
+          <p class="brand-subtitle">CNN-LSTM Multi-Modal Vision Language Model</p>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-chip" id="chip-backend-status">
+          <span class="status-dot"></span>
+          <span id="txt-backend-status">Connecting...</span>
+        </div>
+        <div class="status-chip">
+          <span class="chip-label">Backbone</span>
+          <span class="chip-value" id="txt-backbone">MobileNetV3</span>
+        </div>
+        <div class="status-chip">
+          <span class="chip-label">Decoder</span>
+          <span class="chip-value">LSTM (512-dim)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="nav-tabs-wrapper">
+    <div class="nav-tabs" role="tablist">
+      <button class="tab-btn active" id="tab-studio-btn" data-tab="studio">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        <span>Captioning Studio</span>
+      </button>
+      <button class="tab-btn" id="tab-eval-btn" data-tab="eval">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 20V10M12 20V4M6 20v-6"></path>
+        </svg>
+        <span>BLEU Evaluation Lab</span>
+      </button>
+      <button class="tab-btn" id="tab-arch-btn" data-tab="arch">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M3 12h3M18 12h3M12 3v3M12 18v3"></path>
+        </svg>
+        <span>Architecture & Flow</span>
+      </button>
+      <button class="tab-btn" id="tab-docs-btn" data-tab="docs">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        <span>Training & Flickr8k Guide</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- TAB 1: STUDIO -->
+    <section class="tab-content active" id="tab-studio">
+      <div class="studio-grid">
+        <!-- LEFT PANEL: Image & Controls -->
+        <div class="studio-col input-panel">
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="header-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div>
+                <h2 class="card-title">Input Image</h2>
+                <p class="card-desc">Upload a custom image or pick from presets</p>
+              </div>
+            </div>
+
+            <!-- Upload Dropzone -->
+            <div class="dropzone" id="image-dropzone">
+              <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" style="display: none;">
+              <div class="dropzone-content" id="dropzone-prompt">
+                <div class="upload-icon-circle">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                </div>
+                <p class="dropzone-text"><strong>Click to browse</strong> or drag and drop an image</p>
+                <p class="dropzone-sub">Supports PNG, JPG, WEBP (Max 10MB)</p>
+              </div>
+
+              <!-- Preview State -->
+              <div class="image-preview-container" id="preview-container" style="display: none;">
+                <img id="img-preview" src="" alt="Selected image preview">
+                <div class="preview-overlay">
+                  <div class="preview-meta">
+                    <span id="preview-badge-name" class="meta-tag">image.jpg</span>
+                    <span id="preview-badge-dims" class="meta-tag">0x0</span>
+                  </div>
+                  <button class="btn-clear" id="btn-clear-image" title="Remove image">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preset Gallery -->
+            <div class="preset-section">
+              <div class="preset-header">
+                <span class="preset-title">Flickr-Style Sample Presets</span>
+                <span class="preset-sub">Instant 1-Click Load</span>
+              </div>
+              <div class="preset-gallery" id="preset-gallery">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Hyperparameters & Decoding Controls -->
+            <div class="controls-section">
+              <h3 class="section-heading">Decoding Parameters</h3>
+
+              <!-- Strategy Toggle -->
+              <div class="control-group">
+                <label class="control-label">Search Strategy</label>
+                <div class="segmented-control" role="radiogroup">
+                  <button type="button" class="segment-btn active" id="btn-strategy-beam" data-strategy="beam">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                    </svg>
+                    Beam Search
+                  </button>
+                  <button type="button" class="segment-btn" id="btn-strategy-greedy" data-strategy="greedy">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Greedy Search
+                  </button>
+                </div>
+              </div>
+
+              <!-- Beam Width (Visible only in Beam Search mode) -->
+              <div class="control-group" id="group-beam-width">
+                <div class="slider-header">
+                  <label class="control-label" for="slider-beam-width">Beam Width (K)</label>
+                  <span class="slider-value" id="val-beam-width">3</span>
+                </div>
+                <input type="range" class="range-slider" id="slider-beam-width" min="1" max="5" value="3" step="1">
+                <div class="slider-ticks">
+                  <span>1 (Greedy)</span>
+                  <span>2</span>
+                  <span>3 (Balanced)</span>
+                  <span>4</span>
+                  <span>5 (Broad)</span>
+                </div>
+              </div>
+
+              <!-- Temperature Slider -->
+              <div class="control-group">
+                <div class="slider-header">
+                  <label class="control-label" for="slider-temp">Softmax Temperature (T)</label>
+                  <span class="slider-value" id="val-temp">1.0</span>
+                </div>
+                <input type="range" class="range-slider" id="slider-temp" min="0.2" max="1.8" value="1.0" step="0.1">
+                <div class="slider-ticks">
+                  <span>0.2 (Deterministic)</span>
+                  <span>1.0 (Standard)</span>
+                  <span>1.8 (Creative)</span>
+                </div>
+              </div>
+
+              <!-- Max Length Slider -->
+              <div class="control-group">
+                <div class="slider-header">
+                  <label class="control-label" for="slider-max-len">Max Sequence Tokens</label>
+                  <span class="slider-value" id="val-max-len">25</span>
+                </div>
+                <input type="range" class="range-slider" id="slider-max-len" min="10" max="35" value="25" step="1">
+              </div>
+
+              <!-- Action Button -->
+              <button class="btn-primary" id="btn-generate">
+                <span class="btn-shine"></span>
+                <span class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </span>
+                <span class="btn-text">Generate Caption</span>
+                <span class="btn-shortcut">Ctrl + Enter</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: Caption Output & Neural Breakdown -->
+        <div class="studio-col output-panel">
+          <!-- Main Caption Hero Card -->
+          <div class="glass-card hero-caption-card" id="card-hero-caption">
+            <div class="caption-card-header">
+              <div class="chip-badge">
+                <span class="pulse-ring"></span>
+                <span id="badge-strategy-name">Beam Search (K=3)</span>
+              </div>
+              <div class="caption-actions">
+                <button class="icon-action-btn" id="btn-tts" title="Read caption aloud">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                </button>
+                <button class="icon-action-btn" id="btn-copy-caption" title="Copy to clipboard">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Caption Display -->
+            <div class="caption-text-wrapper">
+              <p class="caption-text" id="txt-generated-caption">Select an image or sample preset to generate its deep learning caption.</p>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="caption-metrics-bar">
+              <div class="metric-item">
+                <span class="metric-label">Confidence</span>
+                <span class="metric-val" id="metric-confidence">--</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Inference Time</span>
+                <span class="metric-val" id="metric-latency">--</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Sequence Length</span>
+                <span class="metric-val" id="metric-tokens-count">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Token Breakdown & Confidence Flow -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="header-icon icon-emerald">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h3 class="card-title">Token-by-Token Probabilities</h3>
+                <p class="card-desc">Click any word chip to inspect alternative vocabulary candidates</p>
+              </div>
+            </div>
+
+            <div class="tokens-flow-container" id="tokens-container">
+              <p class="placeholder-text">Tokens will appear here once caption is generated.</p>
+            </div>
+
+            <!-- Candidate Inspector Popup/Tray -->
+            <div class="candidate-inspector" id="candidate-inspector" style="display: none;">
+              <div class="inspector-header">
+                <span>LSTM Softmax Alternatives for: <strong id="inspector-word">dog</strong></span>
+                <button class="btn-close-sm" id="btn-close-inspector">&times;</button>
+              </div>
+              <div class="candidate-bars-list" id="inspector-bars"></div>
+            </div>
+          </div>
+
+          <!-- Beam Candidates Exploration (When in Beam Search) -->
+          <div class="glass-card" id="card-beam-candidates" style="display: none;">
+            <div class="card-header">
+              <div class="header-icon icon-violet">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+              </div>
+              <div>
+                <h3 class="card-title">Beam Search Hypotheses Tree</h3>
+                <p class="card-desc">Parallel paths evaluated by cumulative normalized log-likelihood</p>
+              </div>
+            </div>
+
+            <div class="beam-table-wrapper">
+              <table class="beam-table" id="table-beam-candidates">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Hypothesis Sentence</th>
+                    <th>Log-Likelihood</th>
+                    <th>Normalized Score</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-beam-candidates">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- CNN Visual Concept Activations -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="header-icon icon-amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </div>
+              <div>
+                <h3 class="card-title">CNN Visual Feature Concepts</h3>
+                <p class="card-desc">Top semantic visual activations extracted by MobileNetV3 backbone</p>
+              </div>
+            </div>
+
+            <div class="concept-bars" id="concept-bars-container">
+              <p class="placeholder-text">Awaiting visual feature extraction...</p>
+            </div>
+          </div>
+
+          <!-- Ground Truth References & BLEU Evaluation (for presets) -->
+          <div class="glass-card" id="card-preset-bleu" style="display: none;">
+            <div class="card-header">
+              <div class="header-icon icon-cyan">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <div>
+                <h3 class="card-title">Flickr8k Benchmark & BLEU Score</h3>
+                <p class="card-desc">Evaluated against 5 ground-truth reference descriptions</p>
+              </div>
+            </div>
+
+            <div class="bleu-meter-grid">
+              <div class="bleu-meter-card">
+                <span class="bleu-type">BLEU-1</span>
+                <span class="bleu-score" id="val-bleu-1">0.00</span>
+                <span class="bleu-desc">Unigram Precision</span>
+              </div>
+              <div class="bleu-meter-card">
+                <span class="bleu-type">BLEU-2</span>
+                <span class="bleu-score" id="val-bleu-2">0.00</span>
+                <span class="bleu-desc">Bigram Precision</span>
+              </div>
+              <div class="bleu-meter-card">
+                <span class="bleu-type">BLEU-3</span>
+                <span class="bleu-score" id="val-bleu-3">0.00</span>
+                <span class="bleu-desc">Trigram Precision</span>
+              </div>
+              <div class="bleu-meter-card highlight">
+                <span class="bleu-type">BLEU-4</span>
+                <span class="bleu-score" id="val-bleu-4">0.00</span>
+                <span class="bleu-desc">4-Gram Precision (Standard)</span>
+              </div>
+            </div>
+
+            <!-- Reference Captions Collapsible -->
+            <div class="references-block">
+              <span class="references-title">Flickr8k Ground Truth References:</span>
+              <ul class="references-list" id="list-references"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: BLEU LAB -->
+    <section class="tab-content" id="tab-eval">
+      <div class="lab-container">
+        <div class="glass-card">
+          <div class="card-header">
+            <div class="header-icon icon-emerald">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div>
+              <h2 class="card-title">BLEU Score Evaluation Lab</h2>
+              <p class="card-desc">Bilingual Evaluation Understudy (Papineni et al.) precision benchmark for NLP & Vision-to-Text</p>
+            </div>
+          </div>
+
+          <div class="lab-grid">
+            <div class="lab-inputs">
+              <div class="control-group">
+                <label class="control-label" for="txt-eval-candidate">Candidate Caption (Generated Hypothesis)</label>
+                <textarea class="code-textarea" id="txt-eval-candidate" rows="3" placeholder="Enter generated caption here..."></textarea>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="txt-eval-references">Reference Captions (Ground Truth - 1 per line)</label>
+                <textarea class="code-textarea" id="txt-eval-references" rows="6" placeholder="Enter reference captions, one per line..."></textarea>
+              </div>
+
+              <button class="btn-primary" id="btn-run-eval">
+                <span class="btn-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </span>
+                <span>Compute BLEU Metrics</span>
+              </button>
+            </div>
+
+            <div class="lab-results" id="eval-results-box">
+              <h3 class="section-heading">Evaluation Breakdown</h3>
+              <div class="eval-metrics-grid">
+                <div class="eval-card">
+                  <div class="eval-card-header">BLEU-1</div>
+                  <div class="eval-card-val" id="eval-bleu-1">--</div>
+                  <div class="eval-card-bar"><div class="fill" id="bar-bleu-1" style="width: 0%"></div></div>
+                </div>
+                <div class="eval-card">
+                  <div class="eval-card-header">BLEU-2</div>
+                  <div class="eval-card-val" id="eval-bleu-2">--</div>
+                  <div class="eval-card-bar"><div class="fill" id="bar-bleu-2" style="width: 0%"></div></div>
+                </div>
+                <div class="eval-card">
+                  <div class="eval-card-header">BLEU-3</div>
+                  <div class="eval-card-val" id="eval-bleu-3">--</div>
+                  <div class="eval-card-bar"><div class="fill" id="bar-bleu-3" style="width: 0%"></div></div>
+                </div>
+                <div class="eval-card eval-card-highlight">
+                  <div class="eval-card-header">BLEU-4 (Cumulative)</div>
+                  <div class="eval-card-val" id="eval-bleu-4">--</div>
+                  <div class="eval-card-bar"><div class="fill" id="bar-bleu-4" style="width: 0%"></div></div>
+                </div>
+              </div>
+
+              <div class="eval-extra-details">
+                <div class="detail-row">
+                  <span>Brevity Penalty (BP):</span>
+                  <strong id="eval-bp">--</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Candidate Length vs Reference:</span>
+                  <strong id="eval-lens">--</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Formula:</span>
+                  <code>BLEU = BP &times; exp(&sum; w_n &times; ln(p_n))</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: ARCHITECTURE & FLOW -->
+    <section class="tab-content" id="tab-arch">
+      <div class="arch-container">
+        <div class="glass-card">
+          <div class="card-header">
+            <div class="header-icon icon-cyan">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+              </svg>
+            </div>
+            <div>
+              <h2 class="card-title">CNN-LSTM Multi-Modal Architecture</h2>
+              <p class="card-desc">Visual-to-Semantic encoding and autoregressive sequence decoding pipeline</p>
+            </div>
+          </div>
+
+          <!-- Architecture Visual Diagram -->
+          <div class="arch-diagram-flow">
+            <!-- Stage 1 -->
+            <div class="arch-stage-card">
+              <div class="stage-tag">Step 1: Vision Encoder</div>
+              <div class="stage-title">Pre-trained CNN</div>
+              <div class="stage-badge">MobileNetV3 / ResNet-50</div>
+              <p class="stage-text">Transforms RGB image $(224 \times 224 \times 3)$ into a high-level spatial visual feature vector (1024-D / 2048-D).</p>
+              <div class="stage-tensor">Output: Tensor [1, 1024]</div>
+            </div>
+
+            <div class="flow-arrow">&rarr;</div>
+
+            <!-- Stage 2 -->
+            <div class="arch-stage-card">
+              <div class="stage-tag">Step 2: Projection</div>
+              <div class="stage-title">Linear Dense Layer</div>
+              <div class="stage-badge">Linear + LayerNorm + ReLU</div>
+              <p class="stage-text">Projects CNN visual representations into the joint multi-modal embedding space (256-D).</p>
+              <div class="stage-tensor">Output: Tensor [1, 256]</div>
+            </div>
+
+            <div class="flow-arrow">&rarr;</div>
+
+            <!-- Stage 3 -->
+            <div class="arch-stage-card">
+              <div class="stage-tag">Step 3: Language Decoder</div>
+              <div class="stage-title">Recurrent LSTM</div>
+              <div class="stage-badge">Hidden Dim: 512</div>
+              <p class="stage-text">Maintains sequential grammar state $h_t, c_t$. Conditioned on previous word tokens and visual context.</p>
+              <div class="stage-tensor">State: [1, 512]</div>
+            </div>
+
+            <div class="flow-arrow">&rarr;</div>
+
+            <!-- Stage 4 -->
+            <div class="arch-stage-card stage-highlight">
+              <div class="stage-tag">Step 4: Decoding</div>
+              <div class="stage-title">Greedy / Beam Search</div>
+              <div class="stage-badge">Softmax &rarr; Vocabulary</div>
+              <p class="stage-text">Calculates probability over full vocabulary. Generates caption word by word until <code>&lt;end&gt;</code> token.</p>
+              <div class="stage-tensor">Prediction: Next Token ID</div>
+            </div>
+          </div>
+
+          <!-- Architecture Specs Table -->
+          <div class="specs-grid" id="specs-grid">
+            <div class="spec-card">
+              <span class="spec-label">CNN Feature Backbone</span>
+              <strong class="spec-value" id="spec-backbone">MobileNetV3-Small</strong>
+            </div>
+            <div class="spec-card">
+              <span class="spec-label">Feature Dimension</span>
+              <strong class="spec-value" id="spec-feat-dim">1024</strong>
+            </div>
+            <div class="spec-card">
+              <span class="spec-label">Word Embedding Dim</span>
+              <strong class="spec-value" id="spec-embed-dim">256</strong>
+            </div>
+            <div class="spec-card">
+              <span class="spec-label">LSTM Hidden Units</span>
+              <strong class="spec-value" id="spec-hidden-dim">512</strong>
+            </div>
+            <div class="spec-card">
+              <span class="spec-label">Vocabulary Size</span>
+              <strong class="spec-value" id="spec-vocab-size">--</strong>
+            </div>
+            <div class="spec-card">
+              <span class="spec-label">Total Parameters</span>
+              <strong class="spec-value" id="spec-params">--</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: TRAINING & FLICKR8K GUIDE -->
+    <section class="tab-content" id="tab-docs">
+      <div class="docs-container">
+        <div class="glass-card">
+          <div class="card-header">
+            <div class="header-icon icon-violet">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 class="card-title">Training Guide & Flickr8k Workflow</h2>
+              <p class="card-desc">Step-by-step instructions to train the CNN-LSTM on the 8,000-image benchmark</p>
+            </div>
+          </div>
+
+          <div class="docs-content">
+            <h3>1. The Flickr8k Dataset Structure</h3>
+            <p>The Flickr8k dataset consists of 8,092 high-resolution real-world images, each paired with <strong>5 human-annotated descriptive captions</strong> (totaling 40,460 captions). The dataset is divided into:</p>
+            <ul>
+              <li><code>Flicker8k_Dataset/</code>: Directory containing 8,092 JPEG images.</li>
+              <li><code>Flickr8k.token.txt</code>: Ground truth text file formatted as <code>&lt;image_id&gt;#0 &lt;caption&gt;</code> through <code>#4</code>.</li>
+              <li><code>Flickr_8k.trainImages.txt</code>: 6,000 image filenames for training.</li>
+              <li><code>Flickr_8k.devImages.txt</code>: 1,000 images for validation.</li>
+              <li><code>Flickr_8k.testImages.txt</code>: 1,000 images for testing BLEU score.</li>
+            </ul>
+
+            <h3>2. Offline Feature Extraction (Speed Optimization)</h3>
+            <p>Rather than running raw images through the heavy CNN on every training epoch, we pre-extract and cache penultimate feature vectors. This reduces training epoch duration from hours down to just minutes on modern CPUs/GPUs.</p>
+            <div class="code-box">
+              <code>python -c "from training.train import extract_and_cache_features"</code>
+            </div>
+
+            <h3>3. Running Training with PyTorch</h3>
+            <p>Run the modular training pipeline directly via terminal:</p>
+            <div class="code-box">
+              <code># Quick verification demo run (runs on sample images):<br>
+python training/train.py --demo_train --epochs 5<br><br>
+# Full Flickr8k dataset training:<br>
+python training/train.py --data_dir data/flickr8k --epochs 10 --batch_size 32 --lr 0.001</code>
+            </div>
+
+            <h3>4. Teacher Forcing & Loss Function</h3>
+            <p>During training, the LSTM decoder is fed ground-truth tokens $w_t$ at each timestep (known as <em>Teacher Forcing</em>). The model outputs unnormalized logits across all $|\mathcal{V}|$ vocabulary words. We optimize using <strong>Categorical Cross-Entropy Loss</strong> while ignoring the <code>&lt;pad&gt;</code> index:</p>
+            <div class="code-box">
+              <code>criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)<br>
+loss = criterion(logits.view(-1, vocab_size), targets.view(-1))</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Notification Toast -->
+  <div class="toast" id="app-toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

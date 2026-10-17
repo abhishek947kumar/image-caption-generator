@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.github
+tests/
+data/flickr8k/
+weights/features_cache.pt
+*.log
+.pytest_cache/
+.vscode/
+.idea/
+.env
