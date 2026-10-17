@@ -89,32 +89,30 @@ This project implements the foundational **Merge Model / Show & Tell architectur
 
 ```mermaid
 flowchart TD
-    subgraph VisionEncoder["1. Vision Encoder (CNN Backbone)"]
-        A["Input RGB Image (224x224x3)"] --> B["MobileNetV3 / ResNet-50"]
-        B --> C["Global Average Pooling"]
-        C --> D["Visual Feature Vector (1024-D / 2048-D)"]
+    subgraph Inputs["1. Multi-Modal Inputs"]
+        direction LR
+        A["📷 Input Image (224×224×3)"]
+        T["📝 Caption Tokens (start, w1...)"]
     end
 
-    subgraph MultiModal["2. Multi-Modal Embedding & State Init"]
-        D --> E["Linear Projection (1024 -> 256)"]
-        E --> F["Layer Normalization + ReLU + Dropout"]
-        F --> G["Initial Hidden & Cell States (h_0, c_0)"]
+    subgraph Encoders["2. Feature Encoding & Projection"]
+        direction LR
+        A --> B["CNN Backbone (MobileNetV3 / ResNet-50)"]
+        B --> C["Visual Feature Embedding (256-D)"]
+        T --> D["Word Embedding Layer (256-D)"]
     end
 
-    subgraph LanguageDecoder["3. Recurrent Language Model (LSTM)"]
-        H["Token Sequence: &lt;start&gt;, w_1, ..."] --> I["Word Embedding (Vocab -> 256)"]
-        G --> J["LSTM Recurrent Cell (512 Units)"]
-        I --> J
-        J --> K["Hidden Representation h_t"]
+    subgraph Decoder["3. Sequential Language Decoder"]
+        C -->|"Visual Context (h0, c0)"| E["LSTM Recurrent Cell (512 Units)"]
+        D -->|"Word Vector"| E
+        E --> F["Multi-Modal Fusion Layer (Visual + Hidden)"]
     end
 
-    subgraph Fusion["4. Fusion & Decoding Head"]
-        F --> L["Concatenate [Visual Embed, h_t]"]
-        K --> L
-        L --> M["Dense Classifier (768 -> 512 -> Vocab Size)"]
-        M --> N["Softmax Normalization"]
-        N --> O["Greedy / Beam Search Engine"]
-        O --> P["Final Caption: &lt;start&gt; ... &lt;end&gt;"]
+    subgraph Output["4. Prediction & Search Engine"]
+        F --> G["Dense Classification Layer (Vocab Size)"]
+        G --> H["Softmax Vocabulary Probabilities"]
+        H --> I["Greedy / Beam Search Decoding"]
+        I --> J["Final Output Caption"]
     end
 ```
 
