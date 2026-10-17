@@ -8,7 +8,7 @@ Thank you for your interest in contributing to **Neural Image Caption Studio**! 
 
 1. **Fork and Clone the Repository**:
    ```bash
-   git clone https://github.com/<your-username>/image-caption-generator.git
+   git clone https://github.com/abhishek947kumar/image-caption-generator.git
    cd image-caption-generator
    ```
 

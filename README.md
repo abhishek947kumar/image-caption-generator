@@ -3,7 +3,7 @@
 # 🌌 Neural Image Caption Studio
 ### Deep Learning Image Caption Generator with Pre-trained CNNs & LSTMs
 
-[![CI Pipeline](https://github.com/abhishek/image-caption-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/abhishek/image-caption-generator/actions)
+[![CI Pipeline](https://github.com/abhishek947kumar/image-caption-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/abhishek947kumar/image-caption-generator/actions)
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C.svg?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -13,6 +13,18 @@
 <p align="center">
   A full-stack, production-ready computer vision and natural language processing application that translates visual scenes into coherent English descriptions using a merged Convolutional Neural Network (CNN) feature extractor and Recurrent LSTM language decoder.
 </p>
+
+### 📸 Visual Demo & Output Gallery
+
+| Dog Playing Frisbee | Mountain Summit Hiker |
+| :---: | :---: |
+| <img src="data/samples/dog_frisbee.jpg" width="370" alt="Dog Playing Frisbee"/> | <img src="data/samples/mountain_hiker.jpg" width="370" alt="Mountain Summit Hiker"/> |
+| *"A golden retriever jumping high in the air to catch a red frisbee on green grass"* | *"A traveler with a large backpack admiring the sun setting behind mountain ranges"* |
+
+| Cyclist in Autumn Park | Toddler Stacking Blocks |
+| :---: | :---: |
+| <img src="data/samples/cyclist_autumn.jpg" width="370" alt="Cyclist in Autumn Park"/> | <img src="data/samples/child_blocks.jpg" width="370" alt="Toddler Stacking Blocks"/> |
+| *"A cyclist wearing a yellow raincoat and helmet pedaling through a park in the fall"* | *"A young child seated on a patterned rug stacking colorful toy bricks"* |
 
 [Key Features](#-key-features) •
 [Architecture](#-system-architecture) •
@@ -193,7 +205,7 @@ Where $c$ is the candidate length, $r$ is the effective reference length, and $w
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/abhishek/image-caption-generator.git
+git clone https://github.com/abhishek947kumar/image-caption-generator.git
 cd image-caption-generator
 ```
 
