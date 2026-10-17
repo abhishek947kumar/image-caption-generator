@@ -66,8 +66,8 @@ This project implements the foundational **Merge Model / Show & Tell architectur
 ## ✨ Key Features
 
 - **🧠 Dual Decoding Strategies**:
-  - **Greedy Search**: Ultra-fast deterministic $\operatorname{argmax}$ token selection.
-  - **Beam Search**: Evaluates top-$K$ parallel hypothesis trajectories with length penalty normalization ($\alpha = 0.7$).
+  - **Greedy Search**: Ultra-fast deterministic **argmax** token selection.
+  - **Beam Search**: Evaluates top-*K* parallel hypothesis trajectories with length penalty normalization (*α* = 0.7).
 - **🎨 Glassmorphic Neural Studio Web Interface**:
   - Interactive preset gallery with 4 diverse real-world sample images.
   - Drag-and-drop custom image uploader with instantaneous image metadata extraction.
@@ -75,7 +75,7 @@ This project implements the foundational **Merge Model / Show & Tell architectur
   - **Text-to-Speech (TTS)**: Web Speech API integration to articulate captions with real-time soundwave indicators.
   - **Visual Concept Activations**: Displays top-5 detected ImageNet classes and confidence metrics.
 - **📊 BLEU Benchmark Lab**:
-  - Integrated metric engine calculating **BLEU-1, BLEU-2, BLEU-3, and BLEU-4** scores with Brevity Penalty ($BP$).
+  - Integrated metric engine calculating **BLEU-1, BLEU-2, BLEU-3, and BLEU-4** scores with Brevity Penalty (*BP*).
   - Standalone evaluation tab to test arbitrary candidate sentences against multiple reference captions.
 - **⚡ High-Performance Training Pipeline**:
   - Offline penultimate feature vector caching (`weights/features_cache.pt`) allowing full training epochs to run in **seconds** rather than hours.
