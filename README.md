@@ -125,23 +125,23 @@ flowchart TD
 ### 1. Training Objective (Categorical Cross-Entropy)
 Given an image $I$ and ground-truth caption tokens $(w_1, w_2, \dots, w_T)$, the model minimizes negative log-likelihood with teacher forcing:
 
-$$\mathcal{L}(\theta) = -\sum_{t=1}^{T} \log P(w_t \mid w_{<t}, I; \theta)$$
+$$\mathcal{L}(\theta) = -\sum_{t=1}^{T} \log P(w_t \mid w_{1:t-1}, I; \theta)$$
 
-Where the padding index ($\langle\text{pad}\rangle = 0$) is masked from loss accumulation.
+Where the padding index (`<pad> = 0`) is masked from loss accumulation.
 
 ### 2. Beam Search Length Normalization
 To prevent standard beam search from unfairly penalizing longer, more descriptive hypotheses, candidate sequences $Y = (y_1, \dots, y_L)$ are ranked using normalized log-probability:
 
-$$\text{Score}(Y) = \frac{\sum_{t=1}^{L} \log P(y_t \mid y_{<t}, I)}{L^\alpha}, \quad \text{where } \alpha = 0.7$$
+$$\text{Score}(Y) = \frac{\sum_{t=1}^{L} \log P(y_t \mid y_{1:t-1}, I)}{L^{0.7}}$$
 
 ### 3. BLEU Metric (Bilingual Evaluation Understudy)
-Evaluates n-gram overlap between candidate sentence $C$ and references $R$:
+Evaluates n-gram precision between candidate sentence $C$ and references $R$:
 
 $$\text{BLEU-}N = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \ln p_n\right)$$
 
-$$\text{BP} = \begin{cases} 1 & \text{if } c > r \\ \exp\left(1 - \frac{r}{c}\right) & \text{if } c \le r \end{cases}$$
+$$\text{BP} = \min\left(1, e^{1 - r/c}\right)$$
 
-Where $c$ is the candidate length, $r$ is the effective reference length, and $w_n = \frac{1}{N}$.
+Where $c$ is candidate length, $r$ is effective reference length, and weights $w_n = \frac{1}{N}$.
 
 ---
 
@@ -395,5 +395,6 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
 ## 🙏 Acknowledgments
 
 - **Show and Tell: A Neural Image Caption Generator** — [Vinyals et al. (CVPR 2015)](https://arxiv.org/abs/1411.4555)
-- **Flickr8k Dataset** — [Hodosh et al. (JAIR 2013)](https://jair.org/index.php/jair/article/view/10833)
-- **GeeksforGeeks Tutorial** — [Image Caption Generator using Deep Learning on Flickr8k Dataset](https://www.geeksforgeeks.org/deep-learning/image-caption-generator-using-deep-learning-on-flickr8k-dataset/)
+- **Show, Attend and Tell: Neural Image Caption Generation with Visual Attention** — [Xu et al. (ICML 2015)](https://arxiv.org/abs/1502.03044)
+- **Where to Put the Image in an Image Caption Generator** — [Tanti et al. (ACL 2018)](https://arxiv.org/abs/1703.09137)
+- **Framing Image Description as a Ranking Task: Data, Models and Evaluation Metrics (Flickr8k)** — [Hodosh et al. (JAIR 2013)](https://jair.org/index.php/jair/article/view/10833)
