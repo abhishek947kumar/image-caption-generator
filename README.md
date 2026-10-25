@@ -26,6 +26,19 @@
 | <img src="data/samples/cyclist_autumn.jpg" width="370" alt="Cyclist in Autumn Park"/> | <img src="data/samples/child_blocks.jpg" width="370" alt="Toddler Stacking Blocks"/> |
 | *"A cyclist wearing a yellow raincoat and helmet pedaling through a park in the fall"* | *"A young child seated on a patterned rug stacking colorful toy bricks"* |
 
+### 🖥️ Interactive Web Studio & Visual Walkthrough
+
+| Captioning Studio (Beam Search K=3) | Softmax Probability Inspector |
+| :---: | :---: |
+| <img src="screenshots/01_neural_caption_studio_beam_search.png" width="460" alt="Captioning Studio Beam Search"/> | <img src="screenshots/02_token_probability_inspector.png" width="460" alt="Softmax Probability Inspector"/> |
+| *Real-time beam search caption generation with confidence, latency, and live BLEU scores* | *Interactive token inspector displaying softmax probability distributions across the vocabulary* |
+
+| BLEU Benchmark Lab | Architecture & Model Specifications |
+| :---: | :---: |
+| <img src="screenshots/03_bleu_evaluation_lab.png" width="460" alt="BLEU Evaluation Lab"/> | <img src="screenshots/04_model_architecture_spec.png" width="460" alt="Architecture & Model Specifications"/> |
+| *Interactive n-gram precision testing lab calculating BLEU-1 through BLEU-4 metrics* | *Deep dive architectural flow with parameter counts and layer dimension breakdown* |
+
+[Studio Screenshots](#-interactive-web-studio--visual-walkthrough) •
 [Key Features](#-key-features) •
 [Architecture](#-system-architecture) •
 [Quickstart](#-quickstart) •
